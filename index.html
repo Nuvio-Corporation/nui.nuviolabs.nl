@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>NUI — Nuvio Universe Index</title>
+
+    <meta
+        name="description"
+        content="The Nuvio Universe Index — a directory of Nuvio websites, projects and services."
+    >
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- =========================
+         TOP NAVIGATION
+    ========================== -->
+
+    <header class="topbar">
+
+        <a href="./" class="brand" aria-label="NUI home">
+
+            <div class="logo-container">
+                <img
+                    src="./nui-logo.png"
+                    alt="NUI"
+                    class="nui-logo"
+                >
+            </div>
+
+            <div class="brand-text">
+                <span class="brand-subtitle">NUVIO UNIVERSE INDEX</span>
+            </div>
+
+        </a>
+
+        <div class="topbar-right">
+            <span class="system-status">
+                <span class="status-dot"></span>
+                SYSTEM ONLINE
+            </span>
+        </div>
+
+    </header>
+
+
+    <!-- =========================
+         MAIN CONTENT
+    ========================== -->
+
+    <main class="main-container">
+
+        <!-- Hero -->
+
+        <section class="hero">
+
+            <div class="hero-eyebrow">
+                <span class="terminal-symbol">&gt;_</span>
+                OFFICIAL NUVIO INDEX OF ALL WEBSITES
+            </div>
+
+            <h1>
+                <span>N</span>uvio <span>U</span>niverse
+                <span>I</span>ndex
+            </h1>
+
+            <p class="hero-description">
+                A central directory for websites, projects, services
+                and other destinations within the Nuvio universe.
+            </p>
+
+        </section>
+
+
+        <!-- =========================
+             SEARCH
+        ========================== -->
+
+        <section class="directory-controls">
+
+            <div class="search-wrapper">
+
+                <span class="search-icon" aria-hidden="true">
+                    ⌕
+                </span>
+
+                <input
+                    type="search"
+                    id="search"
+                    class="search-input"
+                    placeholder="Search the Nuvio Universe..."
+                    autocomplete="off"
+                    spellcheck="false"
+                    aria-label="Search Nuvio websites"
+                >
+
+                <kbd>/</kbd>
+
+            </div>
+
+
+            <div class="directory-meta">
+
+                <span>
+                    <strong id="result-count">0</strong>
+                    <span id="result-label">entries</span>
+                </span>
+
+                <span class="separator">/</span>
+
+                <span id="database-status">
+                    DATABASE READY
+                </span>
+
+            </div>
+
+        </section>
+
+
+        <!-- =========================
+             DIRECTORY
+        ========================== -->
+
+        <section
+            id="directory"
+            class="directory"
+            aria-live="polite"
+        ></section>
+
+
+        <!-- =========================
+             NO RESULTS
+        ========================== -->
+
+        <section
+            id="no-results"
+            class="no-results hidden"
+        >
+
+            <div class="no-results-icon">
+                ∅
+            </div>
+
+            <h2>No matching entries</h2>
+
+            <p>
+                The NUI database could not find anything matching
+                your search.
+            </p>
+
+        </section>
+
+    </main>
+
+
+    <!-- =========================
+         FOOTER
+    ========================== -->
+
+    <footer class="footer">
+
+        <div class="footer-left">
+            <span class="footer-marker">NUI</span>
+            <span>Nuvio Universe Index</span>
+        </div>
+
+        <div class="footer-right">
+            <span>NUVIOLABS.NL</span>
+            <span class="footer-separator">•</span>
+            <span id="current-year"></span>
+        </div>
+
+    </footer>
+
+
+    <!-- =========================
+         WEBSITE DATABASE
+         
+         ADD YOUR NUVIO WEBSITES HERE.
+         
+         Example:
+         
+         {
+             title: "My Website",
+             url: "https://example.com",
+             description: "Description of the website.",
+             category: "Nuvio"
+         }
+    ========================== -->
+
+    <script>
+
+        const NUVIO_DATABASE = [
+
+            {
+                title: "Nuvio",
+                url: "https://www.nuviolabs.nl",
+                description:
+                    "The main home of all of Nuvio and the Nuvio ecosystems.",
+                category: "Nuvio"
+            },
+
+            {
+                title: "AlJiVi-World",
+                url: "https://aljivi.nuviolabs.nl",
+                description:
+                    "Explore the world of AlJiVi-World and everything within it.",
+                category: "AlJiVi-World"
+            },
+
+            {
+                title: "Nuvio Universe Index",
+                url: "https://nui.nuviolabs.nl",
+                description:
+                    "Search trough all of Nuvio. The NUI shows you everything in our universe.",
+                category: "Nuvio"
+            }
+
+            /*
+             * ADD MORE WEBSITES BELOW
+             *
+             * {
+             *     title: "Website name",
+             *     url: "https://example.com",
+             *     description: "What this website is for.",
+             *     category: "Category"
+             * },
+             */
+
+        ];
+
+
+        /* =====================================
+           DOM ELEMENTS
+        ====================================== */
+
+        const directory = document.getElementById("directory");
+        const searchInput = document.getElementById("search");
+        const resultCount = document.getElementById("result-count");
+        const resultLabel = document.getElementById("result-label");
+        const noResults = document.getElementById("no-results");
+        const currentYear = document.getElementById("current-year");
+
+
+        /* =====================================
+           FAVICON
+           
+           Try the site's favicon first.
+           If that fails, use Google's favicon
+           service as a fallback.
+        ====================================== */
+
+        function getFavicon(url) {
+
+            try {
+
+                const parsedUrl = new URL(url);
+
+                return {
+                    primary: `${parsedUrl.origin}/favicon.ico`,
+                    fallback:
+                        `https://www.google.com/s2/favicons?domain=${encodeURIComponent(parsedUrl.hostname)}&sz=128`
+                };
+
+            } catch {
+
+                return {
+                    primary: "",
+                    fallback: ""
+                };
+
+            }
+
+        }
+
+
+        /* =====================================
+           CREATE WEBSITE CARD
+        ====================================== */
+
+        function createCard(site, index) {
+
+            const favicon = getFavicon(site.url);
+
+            const card = document.createElement("a");
+
+            card.className = "site-card";
+
+            card.href = site.url;
+
+            card.target = "_blank";
+
+            card.rel = "noopener noreferrer";
+
+            card.dataset.index = index;
+
+
+            card.innerHTML = `
+
+                <div class="card-index">
+                    ${String(index + 1).padStart(2, "0")}
+                </div>
+
+                <div class="favicon-wrapper">
+
+                    <img
+                        class="site-favicon"
+                        src="${favicon.primary}"
+                        alt=""
+                        loading="lazy"
+                        referrerpolicy="no-referrer"
+                    >
+
+                    <div class="favicon-fallback">
+                        ◈
+                    </div>
+
+                </div>
+
+                <div class="site-information">
+
+                    <div class="site-category">
+                        ${escapeHTML(site.category || "Nuvio")}
+                    </div>
+
+                    <h2 class="site-title">
+                        ${escapeHTML(site.title)}
+                    </h2>
+
+                    <p class="site-description">
+                        ${escapeHTML(site.description)}
+                    </p>
+
+                    <div class="site-url">
+                        ${escapeHTML(removeProtocol(site.url))}
+                    </div>
+
+                </div>
+
+                <div class="card-arrow" aria-hidden="true">
+                    ↗
+                </div>
+
+            `;
+
+
+            const faviconImage =
+                card.querySelector(".site-favicon");
+
+            const faviconFallback =
+                card.querySelector(".favicon-fallback");
+
+
+            faviconImage.addEventListener("error", () => {
+
+                if (
+                    faviconImage.src !== favicon.fallback &&
+                    favicon.fallback
+                ) {
+
+                    faviconImage.src = favicon.fallback;
+
+                } else {
+
+                    faviconImage.style.display = "none";
+
+                    faviconFallback.style.display = "flex";
+
+                }
+
+            });
+
+
+            return card;
+
+        }
+
+
+        /* =====================================
+           RENDER DIRECTORY
+        ====================================== */
+
+        function renderDirectory(searchTerm = "") {
+
+            directory.innerHTML = "";
+
+            const query =
+                searchTerm.trim().toLowerCase();
+
+
+            const filteredSites =
+                NUVIO_DATABASE.filter(site => {
+
+                    const searchableText = [
+
+                        site.title,
+                        site.url,
+                        site.description,
+                        site.category
+
+                    ]
+                        .join(" ")
+                        .toLowerCase();
+
+                    return searchableText.includes(query);
+
+                });
+
+
+            filteredSites.forEach((site, index) => {
+
+                directory.appendChild(
+                    createCard(site, index)
+                );
+
+            });
+
+
+            resultCount.textContent =
+                filteredSites.length;
+
+            resultLabel.textContent =
+                filteredSites.length === 1
+                    ? "entry"
+                    : "entries";
+
+
+            noResults.classList.toggle(
+                "hidden",
+                filteredSites.length !== 0
+            );
+
+        }
+
+
+        /* =====================================
+           ESCAPE HTML
+           
+           Prevents website information from
+           accidentally being interpreted as HTML.
+        ====================================== */
+
+        function escapeHTML(value) {
+
+            return String(value)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+
+        }
+
+
+        /* =====================================
+           REMOVE HTTPS FROM DISPLAY URL
+        ====================================== */
+
+        function removeProtocol(url) {
+
+            return url
+                .replace(/^https?:\/\//, "")
+                .replace(/\/$/, "");
+
+        }
+
+
+        /* =====================================
+           SEARCH
+        ====================================== */
+
+        searchInput.addEventListener(
+            "input",
+            () => {
+
+                renderDirectory(
+                    searchInput.value
+                );
+
+            }
+        );
+
+
+        /* =====================================
+           "/" TO FOCUS SEARCH
+        ====================================== */
+
+        document.addEventListener(
+            "keydown",
+            event => {
+
+                if (
+                    event.key === "/" &&
+                    document.activeElement !== searchInput
+                ) {
+
+                    event.preventDefault();
+
+                    searchInput.focus();
+
+                }
+
+                if (
+                    event.key === "Escape" &&
+                    document.activeElement === searchInput
+                ) {
+
+                    searchInput.value = "";
+
+                    renderDirectory();
+
+                    searchInput.blur();
+
+                }
+
+            }
+        );
+
+
+        /* =====================================
+           YEAR
+        ====================================== */
+
+        currentYear.textContent =
+            new Date().getFullYear();
+
+
+        /* =====================================
+           INITIAL DATABASE LOAD
+        ====================================== */
+
+        renderDirectory();
+
+    </script>
+
+</body>
+</html>
